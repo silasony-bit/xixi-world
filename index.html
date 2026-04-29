@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>希希世界</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* 极简白墙背景 */
+        body {
+            background-color: #ffffff; 
+            margin: 0; /* 清除默认边距，让排版更严谨 */
+        }
+        
+        /* 把标题区域移到左上角 */
+        .header { 
+            text-align: left; 
+            padding: 40px 40px 0px 50px; 
+        }
+        
+        /* 国际化高级感标题设定 */
+        .title { 
+            font-size: 2.2em; 
+            color: #333333;
+            font-family: 'Gotham', 'Montserrat', sans-serif; 
+            font-weight: 500; 
+            letter-spacing: 3px; 
+            margin: 0;
+        }
+
+        .photo-gallery {
+            column-count: 4; 
+            column-gap: 15px; 
+            padding: 50px;
+        }
+
+        .photo-card {
+            width: 100%; 
+            break-inside: avoid; 
+            margin-bottom: 20px; 
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            cursor: pointer;
+            transition: transform 0.5s ease;
+            opacity: 0; 
+            
+            /* ✨ 新增终极魔法：开启 GPU 硬件加速，专治各种动画卡顿！ ✨ */
+            will-change: transform, opacity;
+        }
+
+        @keyframes slideDownAppear {
+            0% { opacity: 0; transform: translateY(-40px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            100% { transform: translateY(-10px); }
+        }
+
+        #center-photo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); 
+            max-width: 85vw; 
+            max-height: 85vh; 
+            background-color: white;
+            padding: 15px;
+            border-radius: 15px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+            object-fit: contain;
+        }
+
+        .curtain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.6); 
+            backdrop-filter: blur(8px); 
+            -webkit-backdrop-filter: blur(8px); 
+            z-index: 90; 
+            opacity: 0; 
+            pointer-events: none; 
+            transition: opacity 0.4s ease; 
+        }
+
+        .curtain.show {
+            opacity: 1;
+            pointer-events: auto; 
+        }
+    </style>
+</head>
+<body>
+    <div id="curtain" class="curtain">
+        <img id="center-photo" class="center-photo" src="">
+    </div>
+    
+    <div class="header">
+        <h1 class="title">WELCOME TO XIXI WORLD</h1>
+    </div>
+
+    <div id="gallery" class="photo-gallery">
+    </div>
+
+   <script>
+        const curtain = document.getElementById('curtain');
+        const centerPhoto = document.getElementById('center-photo');
+        const gallery = document.getElementById('gallery'); 
+
+        fetch('data.json')
+            .then(response => response.json()) 
+            .then(photos => {
+                // ✨ 魔法前置准备：告诉机器人我们的网格结构
+                let totalPhotos = photos.length;
+                let cols = 4; // 我们网页现在设定的是 4 列
+                let itemsPerCol = Math.ceil(totalPhotos / cols); // 机器人自动计算：大概每列会分到几张照片
+
+                // 开始一张一张发牌
+                photos.forEach((photo, index) => {
+                    let newImage = document.createElement('img');
+                    newImage.className = 'photo-card';
+                    newImage.src = photo.url;
+                    newImage.onclick = function() { zoomPhoto(this); }; 
+                    
+                    // ✨ 核心空间魔法：对角线波浪计算法 ✨
+                    let col = Math.floor(index / itemsPerCol); // 计算出这张照片大约在第几列
+                    let row = index % itemsPerCol; // 计算出这张照片大约在第几行
+                    
+                    // 行号 + 列号 = 距离左上角的远近。数字相同的会绝对同时出场！
+                    let waveIndex = row + col; 
+                    let delay = waveIndex * 0.25; // 基础间隔设为 0.25 秒，视觉波浪感最舒适
+                    
+                    newImage.style.animation = `slideDownAppear 0.8s ease forwards ${delay}s, float 4s ease-in-out infinite alternate ${delay + 0.8}s`;
+                    
+                    gallery.appendChild(newImage);
+                });
+            })
+            .catch(error => {
+                console.error("哎呀，机器人找不到名册，或者名册写错啦：", error);
+            });
+
+        function zoomPhoto(element) {
+            centerPhoto.src = element.src;
+            curtain.classList.add("show");
+        }
+
+        document.addEventListener('click', function(event) {
+            if (!event.target.classList.contains('photo-card')) {
+                curtain.classList.remove("show");
+            }
+        });
+    </script>
+</body>
+</html>
